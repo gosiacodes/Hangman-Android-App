@@ -1,10 +1,11 @@
 package com.example.hangman;
 
-import androidx.appcompat.app.AppCompatActivity;
-
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
@@ -13,10 +14,11 @@ import android.widget.TableRow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AppCompatActivity;
+
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Scanner;
 
@@ -41,11 +43,15 @@ public class MainActivity extends AppCompatActivity {
     Animation scaleAndRotateAnim;
     TableRow tableRowTriesLeft;
     TableRow tableRowReset;
+    TextView txtTriesLeftResult;
+    String TRIES_LEFT;
+    int intTries = 7;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        Log.d("lifecycle","onCreate invoked "+getApplicationContext());
 
         // initialize variables
         myListOfWords = new ArrayList<>();
@@ -59,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
         scaleAndRotateAnim.setFillAfter(true);
         tableRowTriesLeft = findViewById(R.id.tableRowTriesLeft);
         tableRowReset = findViewById(R.id.tableRowReset);
+        txtTriesLeftResult = findViewById(R.id.txtTriesLeftResult);
 
         // traverse database file and populate array list
         InputStream myInputStream = null;
@@ -119,7 +126,6 @@ public class MainActivity extends AppCompatActivity {
 
             }
         });
-
     }
 
     // void
@@ -163,9 +169,9 @@ public class MainActivity extends AppCompatActivity {
 
         // TRIES LEFT
         // initialize the string for tries left
-        triesLeft = " X X X X X";
+        triesLeft = " X X X X X X X";
         txtTriesLeft.setText(triesLeft);
-
+        TRIES_LEFT = triesLeft;
     }
 
     // void
@@ -240,6 +246,8 @@ public class MainActivity extends AppCompatActivity {
             // take out the last two characters from the string
             triesLeft = triesLeft.substring(0, triesLeft.length() - 2);
             txtTriesLeft.setText(triesLeft);
+            TRIES_LEFT = triesLeft;
+            intTries = intTries - 1;
         }
     }
 
@@ -251,7 +259,98 @@ public class MainActivity extends AppCompatActivity {
         // clear animation on table row
         tableRowTriesLeft.clearAnimation();
 
+        intTries = 7;
+
         // setup a new game
         initializeGame();
+    }
+
+    // void for check how many tries left
+    public void checkTriesLeft(View view) {
+        Intent intent = new Intent(MainActivity.this,CheckTriesLeftActivity.class);
+        intent.putExtra("Value1", TRIES_LEFT);
+        intent.putExtra("Value3", intTries);
+        startActivityForResult(intent, 2);
+    }
+
+    // void for check hangman-picture progress
+    public void checkHangman(View view) {
+        Intent intent = new Intent(MainActivity.this,HangingActivity.class);
+        intent.putExtra("Value1", TRIES_LEFT);
+        intent.putExtra("Value3", intTries);
+        startActivityForResult(intent, 2);
+    }
+
+    // void for activity result
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data)
+    {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if(requestCode==2)
+        {
+            String triesMessage = data.getStringExtra("Value2");
+            txtTriesLeftResult.setText(triesMessage);
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d("lifecycle","onStart invoked "+getApplication());
+
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("lifecycle","onResume invoked "+getApplication());
+
+        SharedPreferences prefs = getSharedPreferences("MyPreference", MODE_PRIVATE);
+
+        String savedWord =  prefs.getString("WORD", wordDisplayedString);
+        String savedLetters = prefs.getString("LETTERS", lettersTried);
+        String savedTriesLeft = prefs.getString("TRIES_LEFT", triesLeft);
+
+        int savedTries = prefs.getInt("INT_TRIES", intTries);
+
+        txtWordToGuess.setText(savedWord);
+        txtLettersTried.setText(savedLetters);
+        txtTriesLeft.setText(savedTriesLeft);
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.d("lifecycle","onPause invoked "+getApplication());
+
+        SharedPreferences.Editor editor = getSharedPreferences("MyPreference", MODE_PRIVATE).edit();
+
+        editor.putString("WORD", wordDisplayedString);
+        editor.putString("LETTERS", lettersTried);
+        editor.putString("TRIES_LEFT", triesLeft);
+
+        editor.putInt("INT_TRIES", intTries);
+
+        editor.apply();
+        editor.commit();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.d("lifecycle","onStop invoked "+getApplication());
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d("lifecycle","onRestart invoked "+getApplication());
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d("lifecycle","onDestroy invoked "+getApplication());
     }
 }

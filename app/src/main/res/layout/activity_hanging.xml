@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TableLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/colorPrimary">
+    <TableRow
+        android:id="@+id/tableRowActivityHangingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/txtActivityHangingTitle"
+            android:layout_column="0"
+            android:textSize="@dimen/txtLettersTried"
+            android:textColor="@color/colorAccent"
+            android:text="Hangman progress:"
+            android:gravity="center"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowActivityResult"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+    <ImageView
+            android:id="@+id/imgHangman"
+            android:layout_width="250dp"
+            android:layout_height="250dp"
+            android:src="@drawable/picturehang0" />
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowBtnGoBack2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center">
+
+        <Button
+            android:id="@+id/btnGoBack2"
+            android:layout_height="match_parent"
+            android:layout_column="0"
+            android:layout_weight="1"
+            android:background="@color/colorSecondary"
+            android:onClick="callActivityMain"
+            android:text="Go back to game"
+            android:textColor="@color/colorPrimaryDark"
+            android:textSize="@dimen/btnReset" />
+    </TableRow>
+</TableLayout>

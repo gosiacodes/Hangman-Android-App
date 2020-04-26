@@ -4,5 +4,5 @@ butterfly
 holiday
 javadeveloper
 cherryblossom
-applikation
+application
 strawberry

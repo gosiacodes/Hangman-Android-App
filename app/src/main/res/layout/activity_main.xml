@@ -48,6 +48,7 @@
             android:textColorHint="@color/colorSecondary"
             android:hint="Input one letter"
             android:layout_column="0"
+            android:layout_width="20dp"
             android:gravity="center"
             android:maxLength="1"/>
     </TableRow>
@@ -75,7 +76,7 @@
         android:gravity="center">
         <TextView
             android:id="@+id/txtTriesLeft"
-            android:text=" X X X X X"
+            android:text=" X X X X X X X"
             android:textSize="@dimen/txtTriesLeft"
             android:textStyle="bold"
             android:textColor="@color/colorAccent"
@@ -99,6 +100,58 @@
             android:textColor="@color/colorPrimaryDark"
             android:layout_column="0"
             android:onClick="resetGame"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowCheck"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btnCheck"
+            android:layout_height="match_parent"
+            android:layout_column="0"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:text="Check Tries Left"
+            android:textColor="@color/colorAccent"
+            android:textSize="@dimen/btnReset"
+            android:onClick="checkTriesLeft"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowTriesLeftResult"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+        <TextView
+            android:id="@+id/txtTriesLeftResult"
+            android:text="Tries left result"
+            android:textSize="@dimen/txtTriesLeft"
+            android:textStyle="bold"
+            android:textColor="@color/colorAccent"
+            android:layout_column="0"
+            android:gravity="center"/>
+    </TableRow>
+
+    <TableRow
+        android:id="@+id/tableRowCheck2"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:gravity="center">
+        <Button
+            android:id="@+id/btnCheck2"
+            android:layout_height="match_parent"
+            android:layout_column="0"
+            android:layout_weight="1"
+            android:background="@color/colorPrimaryDark"
+            android:text="Check Hangman"
+            android:textColor="@color/colorAccent"
+            android:textSize="@dimen/btnReset"
+            android:onClick="checkHangman"/>
     </TableRow>
 
 </TableLayout>
