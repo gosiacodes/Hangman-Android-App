@@ -3,12 +3,14 @@ package com.example.hangman;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.os.CountDownTimer;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TableRow;
 import android.widget.TextView;
@@ -20,6 +22,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class MainActivity extends AppCompatActivity {
@@ -46,6 +49,14 @@ public class MainActivity extends AppCompatActivity {
     TextView txtTriesLeftResult;
     String TRIES_LEFT;
     int intTries = 7;
+    static final long START_TIME_IN_MILLIS = 60000;
+    long timeLeftInMillis = START_TIME_IN_MILLIS;
+    CountDownTimer myCountDownTimer;
+    TextView txtCountDownTimer;
+    boolean timerIsRunning;
+    Button btnStartPauseTimer;
+    Button btnResetTimer;
+    boolean gameIsOver;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -66,6 +77,28 @@ public class MainActivity extends AppCompatActivity {
         tableRowTriesLeft = findViewById(R.id.tableRowTriesLeft);
         tableRowReset = findViewById(R.id.tableRowReset);
         txtTriesLeftResult = findViewById(R.id.txtTriesLeftResult);
+        txtCountDownTimer = findViewById(R.id.txtCountDownTimer);
+        btnStartPauseTimer = findViewById(R.id.btnStartPauseTimer);
+        btnResetTimer = findViewById(R.id.btnResetTimer);
+
+        btnStartPauseTimer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (timerIsRunning) {
+                    pauseTimer();
+                }
+                else {
+                    startTimer();
+                }
+            }
+        });
+
+        btnResetTimer.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                resetTimer();
+            }
+        });
 
         // traverse database file and populate array list
         InputStream myInputStream = null;
@@ -130,6 +163,7 @@ public class MainActivity extends AppCompatActivity {
 
     // void
     void initializeGame() {
+        gameIsOver = false;
         // WORD
         // shuffle arrayList and get first element and then remove it
         Collections.shuffle(myListOfWords);
@@ -172,6 +206,59 @@ public class MainActivity extends AppCompatActivity {
         triesLeft = " X X X X X X X";
         txtTriesLeft.setText(triesLeft);
         TRIES_LEFT = triesLeft;
+
+        updateCountDownText();
+    }
+
+    // void
+    private void startTimer() {
+        myCountDownTimer = new CountDownTimer(timeLeftInMillis, 1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                timeLeftInMillis = millisUntilFinished;
+                updateCountDownText();
+            }
+
+            @Override
+            public void onFinish() {
+                timerIsRunning = false;
+                btnStartPauseTimer.setText("Start");
+                btnStartPauseTimer.setClickable(false);
+                btnResetTimer.setClickable(true);
+                tableRowTriesLeft.startAnimation(scaleAndRotateAnim);
+                txtTriesLeft.setText(LOSING_MESSAGE);
+                txtWordToGuess.setText(wordToGuess);
+                editInput.setEnabled(false);
+            }
+        }.start();
+        timerIsRunning = true;
+        btnStartPauseTimer.setText("Pause");
+        btnResetTimer.setClickable(false);
+    }
+
+    // void
+    private void pauseTimer() {
+        myCountDownTimer.cancel();
+        timerIsRunning = false;
+        btnStartPauseTimer.setText("Resume");
+    }
+
+    // void
+    private void resetTimer(){
+        timeLeftInMillis = START_TIME_IN_MILLIS;
+        updateCountDownText();
+        btnStartPauseTimer.setText("Start");
+        btnStartPauseTimer.setClickable(true);
+        btnResetTimer.setClickable(false);
+    }
+
+    // void
+    private void updateCountDownText() {
+        int minutes = (int) (timeLeftInMillis / 1000) / 60;
+        int seconds = (int) (timeLeftInMillis / 1000) % 60;
+
+        String timeLeftFormatted = String.format(Locale.getDefault(),"%02d:%02d", minutes, seconds);
+        txtCountDownTimer.setText(timeLeftFormatted);
     }
 
     // void
@@ -214,6 +301,12 @@ public class MainActivity extends AppCompatActivity {
                 if (!wordDisplayedString.contains("_")){
                     tableRowTriesLeft.startAnimation(scaleAndRotateAnim);
                     txtTriesLeft.setText(WINNING_MESSAGE);
+                    editInput.setEnabled(false);
+                    pauseTimer();
+                    btnStartPauseTimer.setText("Start");
+                    btnStartPauseTimer.setClickable(false);
+                    btnResetTimer.setClickable(true);
+                    gameIsOver = true;
                 }
             }
         }
@@ -226,6 +319,12 @@ public class MainActivity extends AppCompatActivity {
                 tableRowTriesLeft.startAnimation(scaleAndRotateAnim);
                 txtTriesLeft.setText(LOSING_MESSAGE);
                 txtWordToGuess.setText(wordToGuess);
+                editInput.setEnabled(false);
+                pauseTimer();
+                btnStartPauseTimer.setText("Start");
+                btnStartPauseTimer.setClickable(false);
+                btnResetTimer.setClickable(true);
+                gameIsOver = true;
             }
         }
 
@@ -259,7 +358,14 @@ public class MainActivity extends AppCompatActivity {
         // clear animation on table row
         tableRowTriesLeft.clearAnimation();
 
+        // reset timer
+        myCountDownTimer.cancel();
+        timerIsRunning = false;
+        resetTimer();
+
         intTries = 7;
+        txtTriesLeftResult.setText("Tries left result");
+        editInput.setEnabled(true);
 
         // setup a new game
         initializeGame();
@@ -314,15 +420,24 @@ public class MainActivity extends AppCompatActivity {
 
         int savedTries = prefs.getInt("INT_TRIES", intTries);
 
+        Long savedTime = prefs.getLong("millisLeft", timeLeftInMillis);
+
         txtWordToGuess.setText(savedWord);
         txtLettersTried.setText(savedLetters);
         txtTriesLeft.setText(savedTriesLeft);
+
+        if (!gameIsOver) {
+            startTimer();
+        }
+        updateCountDownText();
     }
 
     @Override
     protected void onPause() {
         super.onPause();
         Log.d("lifecycle","onPause invoked "+getApplication());
+
+        pauseTimer();
 
         SharedPreferences.Editor editor = getSharedPreferences("MyPreference", MODE_PRIVATE).edit();
 
@@ -331,6 +446,8 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("TRIES_LEFT", triesLeft);
 
         editor.putInt("INT_TRIES", intTries);
+
+        editor.putLong("millisLeft", timeLeftInMillis);
 
         editor.apply();
         editor.commit();
